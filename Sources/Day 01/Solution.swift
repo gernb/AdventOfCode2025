@@ -37,7 +37,21 @@ enum Part1 {
 // MARK: - Part 2
 
 enum Part2 {
-    static func run(_ source: InputData) {
-        print("Part 2 (\(source)): TODO")
+  static let dial = 0...99
+  static func run(_ source: InputData) {
+    var zeroCount = 0
+    var arrow = 50
+
+    for turn in source.lines.map(parse) {
+      zeroCount += abs(turn / dial.count)
+      let singleRotation = turn % dial.count
+      let next = (arrow + singleRotation + dial.count) % dial.count
+      if arrow != 0 && (next == 0 || (singleRotation < 0 && next > arrow) || (singleRotation > 0 && next < arrow)) {
+        zeroCount += 1
+      }
+      arrow = next
     }
+
+    print("Part 2 (\(source)): \(zeroCount)")
+  }
 }

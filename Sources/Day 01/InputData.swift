@@ -13,6 +13,7 @@ struct InputData: CustomStringConvertible {
     ]}
     static func part2(_ challengeData: String?) -> [Self?] {[
         .example,
+        .example2,
         challengeData.map { Self(name: "challenge", data: $0) }
     ]}
 
@@ -37,4 +38,9 @@ L99
 R14
 L82
 """)
+
+    static let example2 = Self(
+      name: "example2",
+      data: "R1000"
+    )
 }

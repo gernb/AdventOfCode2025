@@ -39,7 +39,32 @@ enum Part1 {
 // MARK: - Part 2
 
 enum Part2 {
+  static func indexOfLargestDigit(startingAt index: Int, excluding count: Int, battery: Battery) -> Int {
+    // get index of largest digit excluding the last count digits
+    battery.enumerated()
+      .dropFirst(index)
+      .dropLast(count)
+      .max { $0.element < $1.element }!
+      .offset
+  }
+
   static func run(_ source: InputData) {
-    print("Part 2 (\(source)): TODO")
+    let batteries = parse(source.lines)
+    let joltages = batteries.map { battery in
+      var indicies: [Int] = []
+      var previousIndex = -1
+      for count in (0 ... 11).reversed() {
+        let index = indexOfLargestDigit(startingAt: previousIndex + 1, excluding: count, battery: battery)
+        indicies.append(index)
+        previousIndex = index
+      }
+      var value = 0
+      for index in indicies {
+        value = value * 10 + battery[index]
+      }
+      return value
+    }
+    let result = joltages.reduce(0, +)
+    print("Part 2 (\(source)): \(result)")
   }
 }

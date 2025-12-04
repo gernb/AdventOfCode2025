@@ -65,7 +65,35 @@ enum Part1 {
 // MARK: - Part 2
 
 enum Part2 {
+  static func accessibleRolls(in grid: [Coordinate: Location]) -> any Collection<Coordinate> {
+    grid.filter { key, value in
+      guard value == .roll else { return false }
+      let adjacentRolls = key.adjacent.filter { grid[$0, default: .empty] == .roll }
+      return adjacentRolls.count < 4
+    }
+    .keys
+  }
+
   static func run(_ source: InputData) {
-    print("Part 2 (\(source)): TODO")
+    var grid: [Coordinate: Location] = parseGrid(from: source.lines) { coord, char in
+      switch char {
+      case ".": .empty
+      case "@": .roll
+      default: fatalError()
+      }
+    }
+
+    var count = 0
+    var rollsWereRemoved = false
+    repeat {
+      let rollsToRemove = accessibleRolls(in: grid)
+      count += rollsToRemove.count
+      rollsWereRemoved = rollsToRemove.isEmpty == false
+      for coord in rollsToRemove {
+        grid[coord] = .empty
+      }
+    } while rollsWereRemoved
+
+    print("Part 2 (\(source)): \(count)")
   }
 }

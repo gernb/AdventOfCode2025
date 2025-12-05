@@ -38,6 +38,22 @@ enum Part1 {
 
 enum Part2 {
   static func run(_ source: InputData) {
-    print("Part 2 (\(source)): TODO")
+    var ranges = Part1.parse(source.lines)
+      .ranges
+      .sorted { $0.lowerBound < $1.lowerBound }
+    var keepGoing = true
+    while keepGoing {
+      keepGoing = false
+      for index in ranges.indices.dropLast() {
+        if ranges[index].overlaps(ranges[index + 1]) {
+          ranges[index] = ranges[index].lowerBound ... max(ranges[index].upperBound, ranges[index + 1].upperBound)
+          ranges.remove(at: index + 1)
+          keepGoing = true
+          break
+        }
+      }
+    }
+    let count = ranges.reduce(0) { $0 + $1.count }
+    print("Part 2 (\(source)): \(count)")
   }
 }

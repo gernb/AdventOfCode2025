@@ -59,28 +59,57 @@ enum Part1 {
 
 // MARK: - Part 2
 
+struct RotatedMatrix: IteratorProtocol, Sequence {
+  private let source: [String]
+  private var column: String.Index?
+
+  init(_ source: [String]) {
+    self.source = source
+    self.column = source.map(\.endIndex).max()
+  }
+
+  mutating func next() -> (any Sequence<Character>)? {
+    guard let column else { return nil }
+    defer {
+      if column == source[0].startIndex {
+        self.column = nil
+      } else {
+        self.column = source[0].index(before: column)
+      }
+    }
+    return RowSequence(source: source, column: column, row: 0)
+  }
+
+  private struct RowSequence: IteratorProtocol, Sequence {
+    let source: [String]
+    let column: String.Index
+    var row: Int
+    mutating func next() -> Character? {
+      guard row < source.count else { return nil }
+      defer { row += 1 }
+      if column < source[row].endIndex {
+        return source[row][column]
+      } else {
+        return " "
+      }
+    }
+  }
+}
+
 enum Part2 {
   static func run(_ source: InputData) {
-    let rtlLines = source.lines.map { $0.reversed() }
-    let numbersCount = rtlLines.count - 1
-    var answers: [Int] = []
-    var values: [Int] = []
-    for index in rtlLines[0].indices {
-      let numbers = (0 ..< numbersCount).compactMap { Int(String(rtlLines[$0][index])) }
-      guard numbers.isEmpty == false else {
-        continue
+    let assignment = RotatedMatrix(source.lines)
+      .map { row in
+        String(row).trimmingCharacters(in: .whitespaces)
       }
-      let value = numbers.reduce(0) { $0 * 10 + $1 }
-      values.append(value)
-      let op = rtlLines[numbersCount][index]
-      if op != " " {
-        let answer = switch rtlLines[numbersCount][index] {
-        case "*": values.reduce(1, *)
-        case "+": values.reduce(0, +)
-        default: fatalError()
-        }
-        answers.append(answer)
-        values.removeAll()
+      .split(separator: "")
+    let answers = assignment.map { lines in
+      let values = lines.dropLast().compactMap(Int.init) +
+        [Int(String(lines.last!.dropLast()).trimmingCharacters(in: .whitespaces))!]
+      return switch lines.last!.last! {
+      case "*": values.reduce(1, *)
+      case "+": values.reduce(0, +)
+      default: fatalError()
       }
     }
     let result = answers.reduce(0, +)

@@ -61,6 +61,29 @@ enum Part1 {
 
 enum Part2 {
   static func run(_ source: InputData) {
-    print("Part 2 (\(source)): TODO")
+    let rtlLines = source.lines.map { $0.reversed() }
+    let numbersCount = rtlLines.count - 1
+    var answers: [Int] = []
+    var values: [Int] = []
+    for index in rtlLines[0].indices {
+      let numbers = (0 ..< numbersCount).compactMap { Int(String(rtlLines[$0][index])) }
+      guard numbers.isEmpty == false else {
+        continue
+      }
+      let value = numbers.reduce(0) { $0 * 10 + $1 }
+      values.append(value)
+      let op = rtlLines[numbersCount][index]
+      if op != " " {
+        let answer = switch rtlLines[numbersCount][index] {
+        case "*": values.reduce(1, *)
+        case "+": values.reduce(0, +)
+        default: fatalError()
+        }
+        answers.append(answer)
+        values.removeAll()
+      }
+    }
+    let result = answers.reduce(0, +)
+    print("Part 2 (\(source)): \(result)")
   }
 }

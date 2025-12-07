@@ -68,8 +68,48 @@ enum Part1 {
 
 // MARK: - Part 2
 
+@MainActor
 enum Part2 {
+  static var diagram: [Coordinate: Square]!
+  static var bottom: Int!
+  static var memo: [Coordinate: Int] = [:]
+
+  static func split(coord: Coordinate) -> Int {
+    if let value = memo[coord] {
+      return value
+    }
+
+    var left = coord.left.down
+    while left.y < bottom && diagram[left] != .splitter {
+      left = left.down
+    }
+    let leftValue = left.y == bottom ? 1 : split(coord: left)
+
+    var right = coord.right.down
+    while right.y < bottom && diagram[right] != .splitter {
+      right = right.down
+    }
+    let rightValue = right.y == bottom ? 1 : split(coord: right)
+
+    let value = leftValue + rightValue
+    memo[coord] = value
+    return value
+  }
+
   static func run(_ source: InputData) {
-    print("Part 2 (\(source)): TODO")
+    diagram = parseGrid(from: source.lines) { coord, char in
+      switch char {
+      case "S": Square.start
+      case "^": .splitter
+      default: nil
+      }
+    }
+    bottom = source.lines.count - 1
+    var coord = diagram.first { $0.value == .start }!.key
+    while diagram[coord] != .splitter {
+      coord = coord.down
+    }
+    let count = split(coord: coord)
+    print("Part 2 (\(source)): \(count)")
   }
 }

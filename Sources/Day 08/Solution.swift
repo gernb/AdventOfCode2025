@@ -79,6 +79,38 @@ enum Part1 {
 
 enum Part2 {
   static func run(_ source: InputData) {
-    print("Part 2 (\(source)): TODO")
+    let junctions = source.lines.map(Coordinate.init(string:))
+    let distances: [Pair<Coordinate>: Double] = junctions.indices.reduce(into: [:]) {
+      result, index in
+      let a = junctions[index]
+      for b in junctions.dropFirst(index + 1) {
+        result[Pair(a: a, b: b)] = a.distance(to: b)
+      }
+    }
+    let shortest = distances.sorted { $0.value < $1.value }
+      .map(\.key)
+
+    var count = 0
+    var circuits: [Set<Coordinate>] = []
+    repeat {
+      let pair = shortest[count]
+      count += 1
+      let indexOfA = circuits.firstIndex { $0.contains(pair.a) }
+      let indexOfB = circuits.firstIndex { $0.contains(pair.b) }
+      switch (indexOfA, indexOfB) {
+      case (.none, .none):
+        circuits.append(pair.set)
+      case (.none, .some(let index)), (.some(let index), .none):
+        circuits[index].formUnion(pair.set)
+      case (.some(let a), .some(let b)):
+        guard a != b else { continue }
+        circuits[a].formUnion(circuits[b])
+        circuits.remove(at: b)
+      }
+    } while circuits.count != 1 || (circuits.first?.count ?? 0) < junctions.count
+
+    let pair = shortest[count - 1]
+    let result = pair.a.x * pair.b.x
+    print("Part 2 (\(source)): \(result)")
   }
 }

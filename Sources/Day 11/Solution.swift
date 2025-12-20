@@ -59,8 +59,44 @@ enum Part1 {
 
 // MARK: - Part 2
 
+@MainActor
 enum Part2 {
+  static var nodes: [String: Node] = [:]
+  static var memo: [[String]: Int] = [:]
+
+  static func countPaths(from start: String, to end: String, visited: Set<String> = []) -> Int {
+    if start == end {
+      return 1
+    }
+    if let cached = memo[[start, end]] {
+      return cached
+    }
+    let visited = visited.union([start])
+    var count = 0
+    if let connections = nodes[start]?.connections {
+      for next in connections where visited.contains(next) == false {
+        count += countPaths(from: next, to: end, visited: visited)
+      }
+    }
+    memo[[start, end]] = count
+    return count
+  }
+
   static func run(_ source: InputData) {
-    print("Part 2 (\(source)): TODO")
+    nodes = Node.parse(source.lines)
+    memo.removeAll()
+    let pathsFromSVRtoFFT = countPaths(from: "svr", to: "fft")
+    let pathsFromSVRtoDAC = countPaths(from: "svr", to: "dac")
+
+    let pathsFromFFTtoDAC = countPaths(from: "fft", to: "dac")
+    let pathsFromDACtoFFT = countPaths(from: "dac", to: "fft")
+
+    let pathsFromFFTtoOUT = countPaths(from: "fft", to: "out")
+    let pathsFromDACtoOUT = countPaths(from: "dac", to: "out")
+
+    let result =
+      pathsFromSVRtoDAC * pathsFromDACtoFFT * pathsFromFFTtoOUT +
+      pathsFromSVRtoFFT * pathsFromFFTtoDAC * pathsFromDACtoOUT
+    print("Part 2 (\(source)): \(result)")
   }
 }

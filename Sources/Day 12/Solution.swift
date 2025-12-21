@@ -25,3 +25,11 @@ enum Part1 {
     print("Part 1 (\(source)): \(result)")
   }
 }
+
+// MARK: - Part 2
+
+enum Part2 {
+  static func run(_ source: InputData) {
+    print("Part 2 (\(source)): Merry Christmas!")
+  }
+}
